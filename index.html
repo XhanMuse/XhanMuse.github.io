@@ -1,0 +1,17 @@
+# set your git identity if not already set
+git config --global user.name "XhanMuse"
+git config --global user.email "you@example.com"
+
+# create project locally
+mkdir XhanMuse-site
+cd XhanMuse-site
+git init
+# create index.html (paste the template below into that file)
+# create folders: audio/, assets/ and add your files
+git add .
+git commit -m "Initial site commit"
+
+# add remote (replace username exactly)
+git remote add origin https://github.com/XhanMuse/XhanMuse.github.io.git
+git branch -M main
+git push -u origin main
