@@ -119,16 +119,16 @@
       display:block;
       margin:10px 0;
       font-weight:bold;
-      text-shadow: 0 0 5px #0ff, 0 0 10px #f0f, 0 0 15px #ff0;
+      text-shadow: 0 0 5px #0ff, 0 0 10px #0ff, 0 0 15px #0ff;
     }
 
     .left { left:0; }
     .right { right:0; }
 
     @keyframes glow {
-      0% { filter: drop-shadow(0 0 5px #0ff) drop-shadow(0 0 10px #f0f); }
-      50% { filter: drop-shadow(0 0 10px #0ff) drop-shadow(0 0 20px #f0f); }
-      100% { filter: drop-shadow(0 0 15px #0ff) drop-shadow(0 0 30px #f0f); }
+      0% { filter: drop-shadow(0 0 5px #0ff) drop-shadow(0 0 10px #0ff); }
+      50% { filter: drop-shadow(0 0 10px #0ff) drop-shadow(0 0 20px #0ff); }
+      100% { filter: drop-shadow(0 0 15px #0ff) drop-shadow(0 0 30px #0ff); }
     }
   </style>
 </head>
@@ -138,16 +138,16 @@
 
   <!-- Side Japanese text -->
   <div class="side-text left">
-    <span style="color:#0ff">クサンミューズ</span>
-    <span style="color:#f0f">クサンミューズ</span>
-    <span style="color:#ff0">クサンミューズ</span>
-    <span style="color:#0f0">クサンミューズ</span>
+    <span>クサンミューズ</span>
+    <span>クサンミューズ</span>
+    <span>クサンミューズ</span>
+    <span>クサンミューズ</span>
   </div>
   <div class="side-text right">
-    <span style="color:#0ff">クサンミューズ</span>
-    <span style="color:#f0f">クサンミューズ</span>
-    <span style="color:#ff0">クサンミューズ</span>
-    <span style="color:#0f0">クサンミューズ</span>
+    <span>クサンミューズ</span>
+    <span>クサンミューズ</span>
+    <span>クサンミューズ</span>
+    <span>クサンミューズ</span>
   </div>
 
   <h1><span class="soul-icon">🜂</span>XhanMuse — Music</h1>
@@ -189,7 +189,6 @@
 
     setActive(0);
 
-    // Auto-play next track
     player.addEventListener('ended', ()=>{
       let nextIndex = (currentIndex + 1) % tracks.length;
       source.src = tracks[nextIndex].getAttribute('data-src');
@@ -203,7 +202,7 @@
     const ctx = canvas.getContext('2d');
     let w, h;
     let particles = [];
-    const particleCount = 80;
+    const particleCount = 100;
 
     function resize(){
       w = canvas.width = window.innerWidth;
@@ -220,19 +219,20 @@
         this.x = Math.random()*w;
         this.y = Math.random()*h;
         this.size = Math.random()*3+1;
-        this.speedX = (Math.random()-0.5)*0.5;
-        this.speedY = (Math.random()-0.5)*0.5;
-        this.alpha = Math.random()*0.5+0.2;
-        this.color = `hsl(${Math.random()*360}, 100%, 50%)`;
+        this.baseY = this.y;
+        this.speedX = (Math.random()-0.5)*0.3;
+        this.speedY = 0;
+        this.alpha = Math.random()*0.5+0.3;
       }
-      update(){
+      update(vol){
         this.x += this.speedX;
-        this.y += this.speedY;
-        if(this.x<0||this.x>w||this.y<0||this.y>h) this.reset();
+        // Bounce up/down with volume
+        this.y = this.baseY - vol * (Math.random()*20 + 10);
+        if(this.x<0||this.x>w) this.reset();
       }
       draw(){
         ctx.globalAlpha = this.alpha;
-        ctx.fillStyle = this.color;
+        ctx.fillStyle = '#0ff';
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
         ctx.fill();
@@ -241,12 +241,24 @@
 
     for(let i=0;i<particleCount;i++) particles.push(new Particle());
 
+    // Audio visualization
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const analyser = audioCtx.createAnalyser();
+    const sourceNode = audioCtx.createMediaElementSource(player);
+    sourceNode.connect(analyser);
+    analyser.connect(audioCtx.destination);
+    analyser.fftSize = 64;
+    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
     function animate(){
       ctx.clearRect(0,0,w,h);
-      particles.forEach(p=>{p.update();p.draw();});
+      analyser.getByteFrequencyData(dataArray);
+      const volume = dataArray.reduce((a,b)=>a+b,0)/dataArray.length/255; // 0-1
+      particles.forEach(p=>{p.update(volume);p.draw();});
       requestAnimationFrame(animate);
     }
     animate();
-  </script>
-</body>
-</html>
+
+    // Unlock audio context on first click for browsers
+    document.body.addEventListener('click', ()=>{
+      if
