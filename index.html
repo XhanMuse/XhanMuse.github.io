@@ -133,7 +133,6 @@
   </style>
 </head>
 <body>
-  <!-- Particle canvas -->
   <canvas id="particles"></canvas>
 
   <!-- Side Japanese text -->
@@ -167,6 +166,7 @@
   <footer>Contact: <a href="mailto:ehunt0045@gmail.com" style="color:#0ff">ehunt0045@gmail.com</a></footer>
 
   <script>
+    // Playlist functionality
     const player = document.getElementById('player');
     const source = document.getElementById('source');
     const tracks = document.querySelectorAll('#playlist li');
@@ -221,13 +221,11 @@
         this.size = Math.random()*3+1;
         this.baseY = this.y;
         this.speedX = (Math.random()-0.5)*0.3;
-        this.speedY = 0;
         this.alpha = Math.random()*0.5+0.3;
       }
       update(vol){
         this.x += this.speedX;
-        // Bounce up/down with volume
-        this.y = this.baseY - vol * (Math.random()*20 + 10);
+        this.y = this.baseY - vol*(Math.random()*30+10);
         if(this.x<0||this.x>w) this.reset();
       }
       draw(){
@@ -253,12 +251,13 @@
     function animate(){
       ctx.clearRect(0,0,w,h);
       analyser.getByteFrequencyData(dataArray);
-      const volume = dataArray.reduce((a,b)=>a+b,0)/dataArray.length/255; // 0-1
+      const volume = dataArray.reduce((a,b)=>a+b,0)/dataArray.length/255;
       particles.forEach(p=>{p.update(volume);p.draw();});
       requestAnimationFrame(animate);
     }
-    animate();
 
-    // Unlock audio context on first click for browsers
-    document.body.addEventListener('click', ()=>{
-      if
+    document.body.addEventListener('click', ()=>{ audioCtx.resume(); }, {once:true});
+    animate();
+  </script>
+</body>
+</html>
